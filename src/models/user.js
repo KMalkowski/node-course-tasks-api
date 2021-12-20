@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose')
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
+const Task = require('./task')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -42,6 +43,16 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
+}, {
+    timestamps: true
+})
+
+//adds virtual field to the resource from another resource
+//sets reference on common field (owner and _id)
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 //adds methods for individual user
@@ -90,6 +101,13 @@ userSchema.pre('save', async function (next) {
     }
     //all custom operations are done, go ahead and actually save the user
     next()
+})
+
+//Delete user's tasks before removing user himself
+userSchema.pre('remove', async function (next){
+    const user = this
+    await Task.deleteMany({owner: user._id})
+    next ()
 })
 
 const User = mongoose.model('User', userSchema)

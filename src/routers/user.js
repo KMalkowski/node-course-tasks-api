@@ -23,7 +23,7 @@ router.get('/users/:id', auth, async (req, res)=>{
 })
 
 //update user
-router.patch('/users/:id', async (req, res)=>{
+router.patch('/me', auth, async (req, res)=>{
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
 
@@ -34,27 +34,20 @@ router.patch('/users/:id', async (req, res)=>{
     }
 
     try{
-        const user = await User.findById(req.params.id)
-        updates.forEach((update)=> user[update] = req.body[update])
-        await user.save()
+        updates.forEach((update)=> req.user[update] = req.body[update])
+        await req.user.save()
 
-        if(!user){
-            res.status(404).send()
-        }
-        res.status(201).send(user)
+        res.status(201).send(req.user)
     }catch(err){
         res.status(400).send(err)
     }
 })
 
 //delete user
-router.delete('/users/:id', async(req, res)=>{
+router.delete('/me', auth, async(req, res)=>{
     try{
-        const user = await User.findByIdAndDelete(req.params.id)
-        if(!user){
-            return res.status(404).send()
-        }
-        res.send('User ' + user.id + ' has been deleted!')
+        await req.user.remove()
+        res.send('Your account has been deleted!')
     }catch(err){
         res.status(500).send()
     }
