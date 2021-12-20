@@ -2,6 +2,7 @@ const express = require('express')
 const User = require('../models/user')
 const router = new express.Router()
 const auth = require('../middleware/auth')
+const multer = require('multer')
 
 //my profile
 router.get('/users/me', auth, async (req, res)=>{
@@ -102,6 +103,35 @@ router.post('/logout-all-sessions', auth, async (req, res) => {
     }catch(err){
         res.status(500).send()
     }
+})
+
+const upload = multer({
+    limits:{
+        fileSize: 1000000
+    },
+    fileFilter(req, file, callback){
+        if(!file.originalname.match(/\.(jpg|jpeg|png)$/)){
+            return callback(new Error('Only jpg, jpeg or png images accepted!'))
+        }
+
+        //everything fine, go ahead
+        callback(undefined, true)
+    }
+})
+
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res)=>{
+    req.user.avatar = req.file.buffer
+    await req.user.save()
+    res.send()
+}, (err, req, res, next)=>{
+    res.status(400).send({error: err.message})
+})
+
+router.delete('/users/me/avatar', auth, async (req, res)=>{
+    req.user.avatar = undefined
+    await req.user.save()
+
+    res.send()
 })
 
 module.exports = router
