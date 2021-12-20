@@ -44,6 +44,7 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+//adds methods for individual user
 userSchema.methods.generateAuthToken = async function () {
     const user = this
     const token = jwt.sign({_id: user._id.toString()}, process.env.JWT_SECRET)
@@ -52,6 +53,17 @@ userSchema.methods.generateAuthToken = async function () {
     await user.save()
 
     return token
+}
+
+//to json is called then user object will be returned (no need to explicitly call it)
+userSchema.methods.toJSON = function (){
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+
+    return userObject
 }
 
 //adds custom function to the User model
