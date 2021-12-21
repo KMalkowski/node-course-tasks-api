@@ -68,7 +68,7 @@ router.post('/users', async (req, res)=>{
         res.status(201).send({user, token}) 
     }catch (err){
         console.log(err)
-        res.status(500).send()
+        res.status(500).send(err)
     }
 })
 
