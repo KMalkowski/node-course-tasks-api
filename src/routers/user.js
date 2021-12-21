@@ -4,6 +4,7 @@ const User = require('../models/user')
 const router = new express.Router()
 const auth = require('../middleware/auth')
 const multer = require('multer')
+const {sendWelcomeEmail, sendByeEmail} = require('../emails/account')
 
 //my profile
 router.get('/users/me', auth, async (req, res)=>{
@@ -49,6 +50,7 @@ router.patch('/me', auth, async (req, res)=>{
 router.delete('/me', auth, async(req, res)=>{
     try{
         await req.user.remove()
+        sendByeEmail(req.user.email, req.user.name)
         res.send('Your account has been deleted!')
     }catch(err){
         res.status(500).send()
@@ -62,6 +64,7 @@ router.post('/users', async (req, res)=>{
     try{
         await user.save()
         const token = await user.generateAuthToken()
+        sendWelcomeEmail(user.email, user.name)
         res.status(201).send({user, token})
     }catch (err){
         res.status(500).send()
