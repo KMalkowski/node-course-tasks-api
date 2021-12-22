@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "jest --watch"
+    "test": "env-cmd .env.test jest --watch"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "author": "",
   "license": "ISC",
